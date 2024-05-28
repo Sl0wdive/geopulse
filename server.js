@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
 import invitationRoutes from './routes/invitations.js';
+import locationRoutes from './routes/locations.js';
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ if (!MONGODB_URL) {
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api', invitationRoutes);
+app.use('/api', locationRoutes);
 
 mongoose.connect(MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => app.listen(PORT, () => console.log(`Server running on port ${PORT}`)))
