@@ -2,7 +2,6 @@ import LocationModel from '../models/location.js';
 import UserModel from '../models/user.js';
 import GroupModel from '../models/group.js';
 
-
 export const createLocation = async (req, res) => {
     try {
         const location = new LocationModel({
@@ -15,7 +14,6 @@ export const createLocation = async (req, res) => {
         res.status(500).json({ message: 'Error creating location', error });
     }
 };
-
 
 export const getLocations = async (req, res) => {
     try {
@@ -36,7 +34,6 @@ export const getLocations = async (req, res) => {
         res.status(500).json({ message: 'Error fetching locations', error });
     }
 };
-
 
 export const getLocation = async (req, res) => {
     try {
@@ -64,7 +61,6 @@ export const getLocation = async (req, res) => {
     }
 };
 
-
 export const updateLocation = async (req, res) => {
     try {
         const location = await LocationModel.findById(req.params.id);
@@ -84,7 +80,6 @@ export const updateLocation = async (req, res) => {
         res.status(500).json({ message: 'Error updating location', error });
     }
 };
-
 
 export const deleteLocation = async (req, res) => {
     try {
