@@ -4,7 +4,6 @@ import auth from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Створення групи
 router.post('/groups', auth, async (req, res) => {
     try {
         const group = new Group({
@@ -19,7 +18,6 @@ router.post('/groups', auth, async (req, res) => {
     }
 });
 
-// Додавання локації до групи
 router.post('/groups/:id/locations', auth, async (req, res) => {
     try {
         const group = await Group.findById(req.params.id);
@@ -36,7 +34,6 @@ router.post('/groups/:id/locations', auth, async (req, res) => {
     }
 });
 
-// Отримання інформації про групи
 router.get('/groups', auth, async (req, res) => {
     try {
         const groups = await Group.find({ members: req.userId }).populate('members', 'fullName email').populate('locations');
@@ -46,7 +43,6 @@ router.get('/groups', auth, async (req, res) => {
     }
 });
 
-// Вступ до групи
 router.post('/groups/:id/join', auth, async (req, res) => {
     try {
         const group = await Group.findById(req.params.id);
