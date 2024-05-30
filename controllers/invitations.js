@@ -20,6 +20,7 @@ export const inviteUserToGroup = async (req, res) => {
             group: groupId,
             invitee: inviteeId,
             inviter: req.userId,
+            createdBy: req.userId,
         });
 
         await invitation.save();

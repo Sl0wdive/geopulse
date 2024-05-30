@@ -1,6 +1,6 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
-import { createLocation, getLocations, getLocation, updateLocation, deleteLocation } from '../controllers/locations.js';
+import { createLocation, getLocations, getLocation, updateLocation, deleteLocation, getPhotos, uploadPhotos, addPhotos } from '../controllers/locations.js';
 import { addReview, getReviews } from '../controllers/reviews.js';
 
 const router = express.Router();
@@ -13,5 +13,8 @@ router.delete('/locations/:id', auth, deleteLocation);
 
 router.post('/locations/:id/reviews', auth, addReview);
 router.get('/locations/:id/reviews', auth, getReviews);
+
+router.post('/locations/:id/photos', auth, uploadPhotos, addPhotos);
+router.get('/locations/:id/photos', auth, getPhotos);
 
 export default router;

@@ -36,10 +36,14 @@ router.post('/groups/:id/locations', auth, async (req, res) => {
 
 router.get('/groups', auth, async (req, res) => {
     try {
-        const groups = await Group.find({ members: req.userId }).populate('members', 'fullName email').populate('locations');
-        res.send(groups);
+        const groups = await Group.find({ members: req.userId })
+            .populate('members', 'fullName email')
+            .populate('locations');
+        
+        res.status(200).json(groups);
     } catch (error) {
-        res.status(500).send(error);
+        console.error('Error fetching groups:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 

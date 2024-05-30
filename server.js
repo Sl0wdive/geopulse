@@ -9,6 +9,8 @@ import redisClient from './config/redis.js';
 import authRoutes from './routes/auth.js';
 import invitationRoutes from './routes/invitations.js';
 import locationRoutes from './routes/locations.js';
+import groupRoutes from './routes/groups.js';
+
 
 dotenv.config();
 
@@ -36,6 +38,7 @@ app.use('/uploads', express.static(uploadsDir));
 app.use('/api/auth', authRoutes);
 app.use('/api', invitationRoutes);
 app.use('/api', locationRoutes);
+app.use('/api', groupRoutes);
 
 const cache = (req, res, next) => {
     const key = req.originalUrl;

@@ -114,6 +114,7 @@ export const deleteLocation = async (req, res) => {
         const location = await LocationModel.findById(req.params.id);
 
         if (!location) {
+            console.log('Location not found:', req.params.id);
             return res.status(404).json({ message: 'Location not found' });
         }
 
@@ -121,12 +122,16 @@ export const deleteLocation = async (req, res) => {
             return res.status(403).json({ message: 'You are not the author of this location' });
         }
 
-        await location.remove();
+        console.log('Deleting location:', location);
+
+        await location.deleteOne();
         res.status(200).json({ message: 'Location deleted' });
     } catch (error) {
+        console.error('Error deleting location:', error);
         res.status(500).json({ message: 'Error deleting location', error });
     }
 };
+
 
 export const uploadPhotos = (req, res, next) => {
     upload(req, res, function (err) {
@@ -151,7 +156,12 @@ export const addPhotos = async (req, res) => {
             return res.status(403).json({ message: 'Unauthorized' });
         }
 
+        if (!req.files || !req.files.length) {
+            return res.status(400).json({ message: 'No files uploaded' });
+        }
+
         req.files.forEach(file => {
+            console.log(`File uploaded: ${file.filename}`);
             location.photos.push({
                 url: `/uploads/${file.filename}`,
                 description: req.body.description || ''
@@ -161,6 +171,7 @@ export const addPhotos = async (req, res) => {
         await location.save();
         res.status(200).json(location);
     } catch (error) {
+        console.error('Error uploading photos:', error);
         res.status(500).json({ message: 'Error uploading photos', error });
     }
 };
