@@ -2,6 +2,9 @@ import LocationModel from '../models/location.js';
 import UserModel from '../models/user.js';
 import GroupModel from '../models/group.js';
 import multer from 'multer';
+import { check, validationResult } from 'express-validator';
+import sanitizeHtml from 'sanitize-html';
+
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -14,18 +17,31 @@ const storage = multer.diskStorage({
 
 export const upload = multer({ storage: storage }).array('photos', 5);
 
-export const createLocation = async (req, res) => {
-    try {
-        const location = new LocationModel({
-            ...req.body,
-            author: req.userId
-        });
-        await location.save();
-        res.status(201).json(location);
-    } catch (error) {
-        res.status(500).json({ message: 'Error creating location', error });
+export const createLocation = [
+    check('name').not().isEmpty().withMessage('Name is required'),
+    check('description').not().isEmpty().withMessage('Description is required'),
+    check('type').isIn(['public', 'private']).withMessage('Type must be either public or private'),
+
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        try {
+            const sanitizedDescription = sanitizeHtml(req.body.description);
+            const location = new LocationModel({
+                ...req.body,
+                description: sanitizedDescription,
+                author: req.userId
+            });
+            await location.save();
+            res.status(201).json(location);
+        } catch (error) {
+            res.status(500).json({ message: 'Error creating location', error });
+        }
     }
-};
+];
 
 export const getLocations = async (req, res) => {
     try {

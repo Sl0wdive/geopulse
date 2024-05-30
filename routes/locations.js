@@ -11,7 +11,6 @@ router.get('/locations/:id', auth, getLocation);
 router.put('/locations/:id', auth, updateLocation);
 router.delete('/locations/:id', auth, deleteLocation);
 
-// Add review route
 router.post('/locations/:id/reviews', auth, addReview);
 router.get('/locations/:id/reviews', auth, getReviews);
 
