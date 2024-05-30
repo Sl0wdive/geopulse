@@ -7,7 +7,7 @@ import sanitizeHtml from 'sanitize-html';
 
 export const register = [
     check('email').isEmail().withMessage('Enter a valid email'),
-    check('fullName').isLength({ min: 2}).withMessage('Enter your name'),
+    check('fullName').isLength({ min: 2 }).withMessage('Enter your name'),
     check('username').isLength({ min: 3 }).withMessage('Username must be at least 3 characters long'),
     check('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
 
@@ -18,6 +18,8 @@ export const register = [
         }
 
         try {
+            console.log('Received registration data:', req.body);
+
             const password = req.body.password;
             const salt = await bcrypt.genSalt(10);
             const hash = await bcrypt.hash(password, salt);
@@ -40,7 +42,7 @@ export const register = [
 
             res.json({ ...userData, token });
         } catch (err) {
-            console.log(err);
+            console.log('Error during registration:', err);
             res.status(500).json({ message: 'Error occurred during registration' });
         }
     }
