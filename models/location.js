@@ -14,6 +14,7 @@ const locationSchema = new mongoose.Schema({
             required: true,
         },
     },
+    category: { type: String, required: true },
     photos: [
         {
             url: { type: String, required: true },

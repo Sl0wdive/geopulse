@@ -21,8 +21,9 @@ export const createLocation = [
     check('name').not().isEmpty().withMessage('Name is required'),
     check('description').not().isEmpty().withMessage('Description is required'),
     check('type').isIn(['public', 'private']).withMessage('Type must be either public or private'),
-    check('coordinates.latitude').isFloat({ min: -90, max: 90 }).withMessage('Latitude must be between -90 and 90'),
-    check('coordinates.longitude').isFloat({ min: -180, max: 180 }).withMessage('Longitude must be between -180 and 180'),
+    check('latitude').isFloat({ min: -90, max: 90 }).withMessage('Latitude must be between -90 and 90'),
+    check('longitude').isFloat({ min: -180, max: 180 }).withMessage('Longitude must be between -180 and 180'),
+    check('category').not().isEmpty().withMessage('Category is required'),
 
     async (req, res) => {
         const errors = validationResult(req);
@@ -36,8 +37,8 @@ export const createLocation = [
                 ...req.body,
                 description: sanitizedDescription,
                 coordinates: {
-                    latitude: req.body.coordinates.latitude,
-                    longitude: req.body.coordinates.longitude
+                    latitude: req.body.latitude,
+                    longitude: req.body.longitude
                 },
                 author: req.userId
             });
@@ -48,6 +49,7 @@ export const createLocation = [
         }
     }
 ];
+
 
 export const getLocations = async (req, res) => {
     try {
@@ -98,6 +100,7 @@ export const getLocation = async (req, res) => {
 export const updateLocation = [
     check('coordinates.latitude').optional().isFloat({ min: -90, max: 90 }).withMessage('Latitude must be between -90 and 90'),
     check('coordinates.longitude').optional().isFloat({ min: -180, max: 180 }).withMessage('Longitude must be between -180 and 180'),
+    check('category').optional().not().isEmpty().withMessage('Category cannot be empty'),
 
     async (req, res) => {
         const errors = validationResult(req);
@@ -117,11 +120,20 @@ export const updateLocation = [
             }
 
             if (req.body.coordinates) {
-                location.coordinates.latitude = req.body.coordinates.latitude || location.coordinates.latitude;
-                location.coordinates.longitude = req.body.coordinates.longitude || location.coordinates.longitude;
+                if (req.body.coordinates.latitude !== undefined) {
+                    location.coordinates.latitude = req.body.coordinates.latitude;
+                }
+                if (req.body.coordinates.longitude !== undefined) {
+                    location.coordinates.longitude = req.body.coordinates.longitude;
+                }
+            }
+
+            if (req.body.category !== undefined) {
+                location.category = req.body.category;
             }
 
             Object.assign(location, req.body);
+
             await location.save();
             res.status(200).json(location);
         } catch (error) {
@@ -129,6 +141,7 @@ export const updateLocation = [
         }
     }
 ];
+
 export const deleteLocation = async (req, res) => {
     try {
         const location = await LocationModel.findById(req.params.id);
