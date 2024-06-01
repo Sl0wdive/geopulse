@@ -21,6 +21,8 @@ export const createLocation = [
     check('name').not().isEmpty().withMessage('Name is required'),
     check('description').not().isEmpty().withMessage('Description is required'),
     check('type').isIn(['public', 'private']).withMessage('Type must be either public or private'),
+    check('coordinates.latitude').isFloat({ min: -90, max: 90 }).withMessage('Latitude must be between -90 and 90'),
+    check('coordinates.longitude').isFloat({ min: -180, max: 180 }).withMessage('Longitude must be between -180 and 180'),
 
     async (req, res) => {
         const errors = validationResult(req);
@@ -33,6 +35,10 @@ export const createLocation = [
             const location = new LocationModel({
                 ...req.body,
                 description: sanitizedDescription,
+                coordinates: {
+                    latitude: req.body.coordinates.latitude,
+                    longitude: req.body.coordinates.longitude
+                },
                 author: req.userId
             });
             await location.save();
@@ -50,8 +56,8 @@ export const getLocations = async (req, res) => {
 
         const locations = await LocationModel.find({
             $or: [
-                { author: req.userId },
-                { allowedUsers: req.userId },
+                { author: user },
+                { allowedUsers: user },
                 { allowedGroups: { $in: groups.map(group => group._id) } },
                 { type: 'public' }
             ]
@@ -89,26 +95,40 @@ export const getLocation = async (req, res) => {
     }
 };
 
-export const updateLocation = async (req, res) => {
-    try {
-        const location = await LocationModel.findById(req.params.id);
+export const updateLocation = [
+    check('coordinates.latitude').optional().isFloat({ min: -90, max: 90 }).withMessage('Latitude must be between -90 and 90'),
+    check('coordinates.longitude').optional().isFloat({ min: -180, max: 180 }).withMessage('Longitude must be between -180 and 180'),
 
-        if (!location) {
-            return res.status(404).json({ message: 'Location not found' });
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
         }
 
-        if (!location.author.equals(req.userId)) {
-            return res.status(403).json({ message: 'You are not the author of this location' });
-        }
+        try {
+            const location = await LocationModel.findById(req.params.id);
 
-        Object.assign(location, req.body);
-        await location.save();
-        res.status(200).json(location);
-    } catch (error) {
-        res.status(500).json({ message: 'Error updating location', error });
+            if (!location) {
+                return res.status(404).json({ message: 'Location not found' });
+            }
+
+            if (!location.author.equals(req.userId)) {
+                return res.status(403).json({ message: 'You are not the author of this location' });
+            }
+
+            if (req.body.coordinates) {
+                location.coordinates.latitude = req.body.coordinates.latitude || location.coordinates.latitude;
+                location.coordinates.longitude = req.body.coordinates.longitude || location.coordinates.longitude;
+            }
+
+            Object.assign(location, req.body);
+            await location.save();
+            res.status(200).json(location);
+        } catch (error) {
+            res.status(500).json({ message: 'Error updating location', error });
+        }
     }
-};
-
+];
 export const deleteLocation = async (req, res) => {
     try {
         const location = await LocationModel.findById(req.params.id);

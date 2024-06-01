@@ -4,6 +4,16 @@ const locationSchema = new mongoose.Schema({
     name: { type: String, required: true },
     description: { type: String, required: true },
     type: { type: String, enum: ['public', 'private'], required: true },
+    coordinates: {
+        latitude: {
+            type: Number,
+            required: true,
+        },
+        longitude: {
+            type: Number,
+            required: true,
+        },
+    },
     photos: [
         {
             url: { type: String, required: true },
