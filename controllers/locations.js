@@ -18,6 +18,7 @@ const storage = multer.diskStorage({
 export const upload = multer({ storage: storage }).array('photos', 5);
 
 export const createLocation = [
+    
     check('name').not().isEmpty().withMessage('Name is required'),
     check('description').not().isEmpty().withMessage('Description is required'),
     check('type').isIn(['public', 'private']).withMessage('Type must be either public or private'),
@@ -25,6 +26,7 @@ export const createLocation = [
     check('longitude').isFloat({ min: -180, max: 180 }).withMessage('Longitude must be between -180 and 180'),
     check('category').not().isEmpty().withMessage('Category is required'),
 
+    
     async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -32,14 +34,17 @@ export const createLocation = [
         }
 
         try {
-            const sanitizedDescription = sanitizeHtml(req.body.description);
+            const { name, description, type, latitude, longitude, category, photos } = req.body;
             const location = new LocationModel({
-                ...req.body,
-                description: sanitizedDescription,
+                name,
+                description,
+                type,
                 coordinates: {
-                    latitude: req.body.latitude,
-                    longitude: req.body.longitude
+                    type: 'Point',
+                    coordinates: [longitude, latitude]
                 },
+                category,
+                photos,
                 author: req.userId
             });
             await location.save();
@@ -220,5 +225,30 @@ export const getPhotos = async (req, res) => {
         res.status(200).json(location.photos);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching photos', error });
+    }
+};
+
+export const searchNearbyLocations = async (req, res) => {
+    const { latitude, longitude, radius } = req.query;
+
+    if (!latitude || !longitude || !radius) {
+        return res.status(400).json({ message: 'Please provide latitude, longitude, and radius for the search' });
+    }
+
+    try {
+        const locations = await LocationModel.find({
+            coordinates: {
+                $geoWithin: {
+                    $centerSphere: [
+                        [longitude, latitude],
+                        radius / 6378.1
+                    ]
+                }
+            }
+        });
+
+        res.status(200).json(locations);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching locations", error: error });
     }
 };

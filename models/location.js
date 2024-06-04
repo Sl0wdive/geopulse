@@ -5,14 +5,11 @@ const locationSchema = new mongoose.Schema({
     description: { type: String, required: true },
     type: { type: String, enum: ['public', 'private'], required: true },
     coordinates: {
-        latitude: {
-            type: Number,
-            required: true,
-        },
-        longitude: {
-            type: Number,
-            required: true,
-        },
+        type: { type: String, enum: ['Point'], required: true },
+        coordinates: {
+            type: [Number],
+            required: true
+        }
     },
     category: { type: String, required: true },
     photos: [
@@ -26,6 +23,8 @@ const locationSchema = new mongoose.Schema({
     allowedGroups: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Group' }],
     reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Review' }]
 });
+
+locationSchema.index({ coordinates: '2dsphere' });
 
 const Location = mongoose.model('Location', locationSchema);
 
